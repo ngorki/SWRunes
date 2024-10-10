@@ -15,4 +15,12 @@ public class Substat extends Stat{
         this.enchanted = stat_line[2] == 1;
         this.grind_value = stat_line[3];
     }
+
+    public boolean isEnchanted() {
+        return enchanted;
+    }
+
+    public int getGrindValue() {
+        return grind_value;
+    }
 }

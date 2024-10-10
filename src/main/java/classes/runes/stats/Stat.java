@@ -28,4 +28,8 @@ public class Stat {
     public void setValue(int value) {
         this.value = value;
     }
+
+    public int getMaxValue(){
+        return this.stat.getMaxValue();
+    }
 }

@@ -4,6 +4,10 @@ import classes.runes.stats.Stat;
 import classes.runes.stats.Substat;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 public class Rune {
     private long id;
     private RuneType type;
@@ -18,6 +22,7 @@ public class Rune {
     private long equipped;
     private long value;
     private long com2us_id;
+    private double efficiency;
 
     public Rune(){}
 
@@ -47,6 +52,7 @@ public class Rune {
         setEquipped(runeNode.get("occupied_id").asLong());
         setValue(runeNode.get("sell_value").asLong());
         setCom2us_id(runeNode.get("rune_id").asLong());
+        setEfficiency();
     }
 
     public int getStars() {
@@ -176,6 +182,63 @@ public class Rune {
 
     public void setAncient(boolean ancient) {
         this.ancient = ancient;
+    }
+
+    public void setEfficiency(){
+        double sum = 1;
+        if(innate.getStat() != null){
+            sum += (double) innate.getValue() / (innate.getMaxValue() * 5);
+        }
+
+        for (Substat stat : subs){
+            if(stat != null)
+                sum += (double) (stat.getValue() + stat.getGrindValue()) / (stat.getMaxValue() * 5);
+        }
+        this.efficiency = sum/2.8 * 100;
+    }
+
+    public double getEfficiency(){
+        return this.efficiency;
+    }
+
+    public boolean insertIntoDB(Connection conn){
+        String insertSQL = """
+                INSERT INTO Runes 
+                (type, slot, grade, stars, level, main_stat, main_value, innate_stat, innate_value, sub1_stat, sub1_value, sub2_stat, sub2_value, sub3_stat, sub3_value, sub4_stat, sub4_value, ancient, equipped, value, com2us_id, efficiency)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            """;
+
+        try (PreparedStatement preparedStatement = conn.prepareStatement(insertSQL)){
+            preparedStatement.setString(1, type.name());
+            preparedStatement.setInt(2, slot);
+            preparedStatement.setInt(3, grade);
+            preparedStatement.setInt(4, stars);
+            preparedStatement.setInt(5, level);
+            preparedStatement.setString(6, main.getStat().getName());
+            preparedStatement.setInt(7, main.getValue());
+            preparedStatement.setString(8, innate.getStat() != null ? innate.getStat().getName() : null);
+            preparedStatement.setInt(9, innate.getValue());
+            for (int i = 0; i < 4; i++) {
+                if (i < subs.length && subs[i] != null) {
+                    preparedStatement.setString(10 + i * 2, subs[i].getStat().getName());
+                    preparedStatement.setInt(11 + i * 2, subs[i].getValue() + subs[i].getGrindValue());
+                } else {
+                    preparedStatement.setNull(10 + i * 2, java.sql.Types.VARCHAR);
+                    preparedStatement.setNull(11 + i * 2, java.sql.Types.INTEGER);
+                }
+            }
+            preparedStatement.setBoolean(18, ancient);
+            preparedStatement.setLong(19, equipped);
+            preparedStatement.setLong(20, value);
+            preparedStatement.setLong(21, com2us_id);
+            preparedStatement.setDouble(22, efficiency);
+
+            preparedStatement.executeUpdate();
+            return true;
+        } catch (SQLException sqlException){
+            sqlException.printStackTrace();
+        }
+        return false;
     }
 }
 

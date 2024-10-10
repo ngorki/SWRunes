@@ -48,5 +48,17 @@ public enum StatType {
         };
     }
 
+    public int getMaxValue() {
+        // Set max_value based on the stat type
+        return switch (this) {
+            case STAT_HP -> 375;
+            case STAT_HP_PCT, STAT_ATK_PCT, STAT_DEF_PCT, STAT_RESIST_PCT, STAT_ACCURACY_PCT -> 8;
+            case STAT_ATK, STAT_DEF -> 20;
+            case STAT_SPD, STAT_CRIT_RATE_PCT -> 6;
+            case STAT_CRIT_DMG_PCT -> 7;
+            default -> 0; // Or any default value if the stat type is undefined
+        };
+    }
+
 }
 
