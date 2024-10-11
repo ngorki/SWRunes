@@ -11,6 +11,22 @@ public class RuneArchetype {
     private String name;
     private ArrayList<StatType> relatedStats;
 
+    public String getName() {
+        return name;
+    }   
+
+    public ArrayList<StatType> getRelatedStats() {
+        return relatedStats;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setRelatedStats(ArrayList<StatType> relatedStats) {
+        this.relatedStats = relatedStats;
+    }
+
     public RuneArchetype(String name, ArrayList<StatType> relatedStats) {
         this.name = name;
         this.relatedStats = relatedStats;

@@ -1,18 +1,18 @@
 package classes.runes.stats;
 
 public enum StatType {
-    STAT_HP(1, "HP"),
-    STAT_HP_PCT(2, "HP %"),
-    STAT_ATK(3, "ATK"),
-    STAT_ATK_PCT(4, "ATK %"),
-    STAT_DEF(5, "DEF"),
-    STAT_DEF_PCT(6, "DEF %"),
-    STAT_SPD(8, "SPD"),
-    STAT_CRIT_RATE_PCT(9, "CRI Rate %"),
-    STAT_CRIT_DMG_PCT(10, "CRI Dmg %"),
-    STAT_RESIST_PCT(11, "Resistance %"),
-    STAT_ACCURACY_PCT(12, "Accuracy %"),
-    STAT_SPD_PCT(13, "SPD %");  // Swift rune set bonus only
+    HP(1, "HP"),
+    HP_PCT(2, "HP %"),
+    ATK(3, "ATK"),
+    ATK_PCT(4, "ATK %"),
+    DEF(5, "DEF"),
+    DEF_PCT(6, "DEF %"),
+    SPD(8, "SPD"),
+    CRIT_RATE_PCT(9, "CRI Rate %"),
+    CRIT_DMG_PCT(10, "CRI Dmg %"),
+    RESIST_PCT(11, "Resistance %"),
+    ACCURACY_PCT(12, "Accuracy %"),
+    SPD_PCT(13, "SPD %");  // Swift rune set bonus only
 
     private final int id;
     private final String name;
@@ -32,18 +32,18 @@ public enum StatType {
 
     public static StatType getStatType(int id) {
         return switch (id) {
-            case 1 -> StatType.STAT_HP;
-            case 2 -> StatType.STAT_HP_PCT;
-            case 3 -> StatType.STAT_ATK;
-            case 4 -> StatType.STAT_ATK_PCT;
-            case 5 -> StatType.STAT_DEF;
-            case 6 -> StatType.STAT_DEF_PCT;
-            case 8 -> StatType.STAT_SPD;
-            case 9 -> StatType.STAT_CRIT_RATE_PCT;
-            case 10 -> StatType.STAT_CRIT_DMG_PCT;
-            case 11 -> StatType.STAT_RESIST_PCT;
-            case 12 -> StatType.STAT_ACCURACY_PCT;
-            case 13 -> StatType.STAT_SPD_PCT;
+            case 1 -> StatType.HP;
+            case 2 -> StatType.HP_PCT;
+            case 3 -> StatType.ATK;
+            case 4 -> StatType.ATK_PCT;
+            case 5 -> StatType.DEF;
+            case 6 -> StatType.DEF_PCT;
+            case 8 -> StatType.SPD;
+            case 9 -> StatType.CRIT_RATE_PCT;
+            case 10 -> StatType.CRIT_DMG_PCT;
+            case 11 -> StatType.RESIST_PCT;
+            case 12 -> StatType.ACCURACY_PCT;
+            case 13 -> StatType.SPD_PCT;
             default -> null; // or an optional UNDEFINED enum if you want to handle unknown IDs
         };
     }
@@ -51,11 +51,11 @@ public enum StatType {
     public int getMaxValue() {
         // Set max_value based on the stat type
         return switch (this) {
-            case STAT_HP -> 375;
-            case STAT_HP_PCT, STAT_ATK_PCT, STAT_DEF_PCT, STAT_RESIST_PCT, STAT_ACCURACY_PCT -> 8;
-            case STAT_ATK, STAT_DEF -> 20;
-            case STAT_SPD, STAT_CRIT_RATE_PCT -> 6;
-            case STAT_CRIT_DMG_PCT -> 7;
+            case HP -> 375;
+            case HP_PCT, ATK_PCT, DEF_PCT, RESIST_PCT, ACCURACY_PCT -> 8;
+            case ATK, DEF -> 20;
+            case SPD, CRIT_RATE_PCT -> 6;
+            case CRIT_DMG_PCT -> 7;
             default -> 0; // Or any default value if the stat type is undefined
         };
     }

@@ -202,13 +202,21 @@ public class Rune {
     }
 
     public boolean insertIntoDB(Connection conn){
-        String insertSQL = """
-                INSERT INTO Runes 
-                (type, slot, grade, stars, level, main_stat, main_value, innate_stat, innate_value, sub1_stat, sub1_value, sub2_stat, sub2_value, sub3_stat, sub3_value, sub4_stat, sub4_value, ancient, equipped, value, com2us_id, efficiency)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-            """;
+        StringBuilder insertSQL = new StringBuilder("INSERT INTO Runes (type, slot, grade, stars, level, main_stat, main_value, innate_stat, innate_value, sub1_stat, sub1_value, sub2_stat, sub2_value, sub3_stat, sub3_value, sub4_stat, sub4_value, ancient, equipped, value, com2us_id, efficiency");
 
-        try (PreparedStatement preparedStatement = conn.prepareStatement(insertSQL)){
+        for (RuneArchetype archetype : Archetypes.archetypes) {
+            insertSQL.append(", ").append(archetype.getName()).append("_Efficiency");
+        }
+
+        insertSQL.append(") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?");
+
+        for (int i = 0; i < Archetypes.archetypes.size(); i++) {
+            insertSQL.append(", ?");
+        }
+
+        insertSQL.append(");");
+
+        try (PreparedStatement preparedStatement = conn.prepareStatement(insertSQL.toString())) {
             preparedStatement.setString(1, type.name());
             preparedStatement.setInt(2, slot);
             preparedStatement.setInt(3, grade);
@@ -232,12 +240,20 @@ public class Rune {
             preparedStatement.setLong(20, value);
             preparedStatement.setLong(21, com2us_id);
             preparedStatement.setDouble(22, efficiency);
+            
+            // Set archetype efficiencies
+            int paramIndex = 23;
+            for (RuneArchetype archetype : Archetypes.archetypes) {
+                double archetypeEff = archetype.getArchetypeEff(this);
+                preparedStatement.setDouble(paramIndex++, archetypeEff);
+            }
 
             preparedStatement.executeUpdate();
             return true;
-        } catch (SQLException sqlException){
+        } catch (SQLException sqlException) {
             sqlException.printStackTrace();
         }
+
         return false;
     }
 }

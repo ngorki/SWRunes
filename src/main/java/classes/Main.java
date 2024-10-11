@@ -1,3 +1,5 @@
+package classes;
+import classes.runes.Archetypes;
 import classes.runes.Rune;
 import classes.runes.RuneArchetype;
 import classes.runes.stats.StatType;
@@ -25,9 +27,13 @@ public class Main {
             
             initDB();
             ArrayList<Rune> runes = parseRunes(jsonData.get("runes"));
+            ArrayList<Rune> equippedRunes = parseEquippedRunes(jsonData.get("unit_list"));
             try {
-                for(Rune rune : runes){
+                for (Rune rune : runes) {
                     rune.insertIntoDB(getDBConnection());
+                }
+                for (Rune equippedRune : equippedRunes) {
+                    equippedRune.insertIntoDB(getDBConnection());
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -39,9 +45,6 @@ public class Main {
 
     public static ArrayList<Rune> parseRunes(JsonNode runeData){
         ArrayList<Rune> runeList = new ArrayList<Rune>();
-        ArrayList<StatType> statTypes = new ArrayList<>(Arrays.asList(StatType.values()));
-        RuneArchetype general = new RuneArchetype("General", statTypes);
-        RuneArchetype dmg = new RuneArchetype("DMG", STAT_HP_PCT, STAT_ATK_PCT, STAT_CRIT_RATE_PCT, STAT_CRIT_DMG_PCT, STAT_SPD_PCT);
 
         for(JsonNode runeNode :  runeData){
             Rune runeObj = new Rune(runeNode);
@@ -49,6 +52,23 @@ public class Main {
         }
 
         return runeList;
+    }
+
+    public static ArrayList<Rune> parseEquippedRunes(JsonNode unitListData) {
+        ArrayList<Rune> equippedRuneList = new ArrayList<>();
+        
+        for (JsonNode unit : unitListData) {
+            JsonNode runesNode = unit.get("runes");
+            if (runesNode != null && runesNode.isArray()) {
+                for (JsonNode runeNode : runesNode) {
+                    Rune rune = new Rune(runeNode);
+                    rune.setEquipped(unit.get("unit_id").asLong());
+                    equippedRuneList.add(rune);
+                }
+            }
+        }
+        
+        return equippedRuneList;
     }
 
     private static Connection getDBConnection() throws SQLException {
@@ -79,7 +99,7 @@ public class Main {
 
     private void createTable(Connection conn) throws SQLException {
         String dropTableSQL = "DROP TABLE IF EXISTS Runes;";
-        String createTableSQL = "CREATE TABLE Runes (\n" +
+        StringBuilder createTableSQL = new StringBuilder("CREATE TABLE Runes (\n" +
                 "                id BIGINT PRIMARY KEY AUTO_INCREMENT,\n" +
                 "                type VARCHAR(50),\n" +
                 "                slot INT,\n" +
@@ -102,11 +122,19 @@ public class Main {
                 "                equipped BIGINT,\n" +
                 "                value BIGINT,\n" +
                 "                com2us_id BIGINT,\n" +
-                "                efficiency DOUBLE\n" +
-                "            );";
+                "                efficiency DOUBLE");
+
+        for (RuneArchetype archetype : Archetypes.archetypes) {
+            createTableSQL.append(",\n                ")
+                          .append(archetype.getName())
+                          .append("_Efficiency DOUBLE");
+        }
+
+        createTableSQL.append("\n            );");
+
         try (Statement stmt = conn.createStatement()) {
             stmt.execute(dropTableSQL);
-            stmt.execute(createTableSQL);
+            stmt.execute(createTableSQL.toString());
         } catch (SQLException e) {
             System.err.println("Error creating table: " + e.getMessage());
             throw e; // Re-throw the exception to be handled by the calling method
