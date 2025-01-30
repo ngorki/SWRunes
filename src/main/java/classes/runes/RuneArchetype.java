@@ -56,4 +56,46 @@ public class RuneArchetype {
         }
         return sum/2.8 * 100;
     }
+
+    public double getArchetypeEff(Rune rune, int type){
+        double sum = 1;
+
+        double replaceValue; // Value is max hero gem + grind stat% / stat% max
+        if(type == 1){
+            replaceValue = 20/40.0; //Legend
+         } else if (type == 2){
+            replaceValue = 23/40.0; // Max Legend
+        } else {
+            replaceValue = 18/40.0; // Max Hero
+        }
+
+        if(rune.getInnate().getStat() != null && isRelevant(rune.getInnate())){
+            sum += (double) (rune.getInnate().getValue() - replaceValue) / (rune.getInnate().getMaxValue() * 5);
+        }
+
+        double minEffiency = Double.MAX_VALUE;
+        boolean isEnchanted = false;
+        for (Substat stat : rune.getSubs()){
+            if(stat != null ){
+                double substatEfficiency = 0;
+                if(isRelevant(stat)){
+                    substatEfficiency = (double) (stat.getValue() + stat.getGrindValue()) / (stat.getMaxValue() * 5);
+                    sum += substatEfficiency;
+                }
+                if(stat.isEnchanted()){
+                    minEffiency = substatEfficiency;
+                    isEnchanted = true;
+                } else if(substatEfficiency < minEffiency && !isEnchanted){
+                    minEffiency = substatEfficiency;
+                }
+            }
+        }
+
+        if(minEffiency != Double.MAX_VALUE){
+            sum -= minEffiency;
+        }
+        sum += replaceValue;
+
+        return sum/2.8 * 100;
+    }
 }

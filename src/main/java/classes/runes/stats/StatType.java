@@ -2,17 +2,17 @@ package classes.runes.stats;
 
 public enum StatType {
     HP(1, "HP"),
-    HP_PCT(2, "HP %"),
+    HP_PCT(2, "HP_PERCENT"), 
     ATK(3, "ATK"),
-    ATK_PCT(4, "ATK %"),
-    DEF(5, "DEF"),
-    DEF_PCT(6, "DEF %"),
+    ATK_PCT(4, "ATK_PERCENT"),
+    DEF(5, "DEF"), 
+    DEF_PCT(6, "DEF_PERCENT"),
     SPD(8, "SPD"),
-    CRIT_RATE_PCT(9, "CRI Rate %"),
-    CRIT_DMG_PCT(10, "CRI Dmg %"),
-    RESIST_PCT(11, "Resistance %"),
-    ACCURACY_PCT(12, "Accuracy %"),
-    SPD_PCT(13, "SPD %");  // Swift rune set bonus only
+    CRIT_RATE_PCT(9, "CRIT_RATE"),
+    CRIT_DMG_PCT(10, "CRIT_DMG"),
+    RESIST_PCT(11, "RESISTANCE"),
+    ACCURACY_PCT(12, "ACCURACY"),
+    SPD_PCT(13, "SPD_PERCENT");  // Swift rune set bonus only
 
     private final int id;
     private final String name;

@@ -2,24 +2,21 @@ package classes;
 import classes.runes.Archetypes;
 import classes.runes.Rune;
 import classes.runes.RuneArchetype;
-import classes.runes.stats.StatType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-
-import static classes.runes.stats.StatType.*;
 
 public class Main {
 
     private static Connection db_conn;
 
     public void main(String[] args) {
+        long startTime = System.currentTimeMillis(); // Start timer
         ObjectMapper objectMapper = new ObjectMapper();
-        String path = "./json/Karueo.json";
+        String path = System.getProperty("user.home") + "/Desktop/Summoners War Exporter Files/Karueo-15631286.json";
 
         try {
             File jsonFile = new File(path);
@@ -40,6 +37,10 @@ public class Main {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            long endTime = System.currentTimeMillis(); // End timer
+            long duration = endTime - startTime; // Calculate duration
+            System.out.println("Processing time: " + duration + " milliseconds");
         }
     }
 
@@ -110,19 +111,23 @@ public class Main {
                 "                main_value INT,\n" +
                 "                innate_stat VARCHAR(50),\n" +
                 "                innate_value INT,\n" +
-                "                sub1_stat VARCHAR(50),\n" +
-                "                sub1_value INT,\n" +
-                "                sub2_stat VARCHAR(50),\n" +
-                "                sub2_value INT,\n" +
-                "                sub3_stat VARCHAR(50),\n" +
-                "                sub3_value INT,\n" +
-                "                sub4_stat VARCHAR(50),\n" +
-                "                sub4_value INT,\n" +
+                "                HP INT,\n" +
+                "                HP_PERCENT INT,\n" +
+                "                ATK INT,\n" +
+                "                ATK_PERCENT INT,\n" +
+                "                DEF INT,\n" +
+                "                DEF_PERCENT INT,\n" +
+                "                SPD INT,\n" +
+                "                CRIT_RATE INT,\n" +
+                "                CRIT_DMG INT,\n" +
+                "                RESISTANCE INT,\n" +
+                "                ACCURACY INT,\n" +
                 "                ancient BOOLEAN,\n" +
                 "                equipped BIGINT,\n" +
                 "                value BIGINT,\n" +
                 "                com2us_id BIGINT,\n" +
-                "                efficiency DOUBLE");
+                "                efficiency DOUBLE,\n" +
+                "                score BIGINT");
 
         for (RuneArchetype archetype : Archetypes.archetypes) {
             createTableSQL.append(",\n                ")

@@ -23,6 +23,8 @@ public class Rune {
     private long value;
     private long com2us_id;
     private double efficiency;
+    private int score;
+    private boolean useGrind = false;
 
     public Rune(){}
 
@@ -53,6 +55,7 @@ public class Rune {
         setValue(runeNode.get("sell_value").asLong());
         setCom2us_id(runeNode.get("rune_id").asLong());
         setEfficiency();
+        setScore();
     }
 
     public int getStars() {
@@ -191,10 +194,102 @@ public class Rune {
         }
 
         for (Substat stat : subs){
-            if(stat != null)
-                sum += (double) (stat.getValue() + stat.getGrindValue()) / (stat.getMaxValue() * 5);
+            if(stat != null){
+                if(useGrind)
+                    sum += (double) (stat.getValue() + stat.getGrindValue()) / (stat.getMaxValue() * 5);
+                else
+                    sum += (double) stat.getValue() / (stat.getMaxValue() * 5);
+            }
         }
         this.efficiency = sum/2.8 * 100;
+    }
+
+    public void setScore() {
+        double hpPercent = 0, atkPercent = 0, defPercent = 0, acc = 0, res = 0;
+        double spd = 0, critRate = 0, critDamage = 0, hp = 0, atk = 0, def = 0;
+
+        if(innate.getStat() != null){
+            switch (innate.getStat().getName()) {
+                case "HP_PERCENT":
+                    hpPercent += innate.getValue();
+                    break;
+                case "ATK_PERCENT":
+                    atkPercent += innate.getValue();
+                    break;
+                case "DEF_PERCENT":
+                    defPercent += innate.getValue();
+                    break;
+                case "ACCURACY":
+                    acc += innate.getValue();
+                    break;
+                case "RESISTANCE":
+                    res += innate.getValue();
+                    break;
+                case "SPD":
+                    spd += innate.getValue();
+                    break;
+                case "CRIT_RATE":
+                    critRate += innate.getValue();
+                    break;
+                case "CRIT_DMG":
+                    critDamage += innate.getValue();
+                    break;
+                case "HP":
+                    hp += innate.getValue();
+                    break;
+                case "ATK":
+                    atk += innate.getValue();
+                    break;
+                case "DEF":
+                    def += innate.getValue();
+                    break;
+            }
+        }
+
+        for (Substat sub : subs) {
+            if (sub != null && sub.getStat() != null) {
+                String statName = sub.getStat().getName();
+                switch (statName) {
+                    case "HP_PERCENT":
+                        hpPercent += useGrind ? sub.getValue() + sub.getGrindValue() : sub.getValue();
+                        break;
+                    case "ATK_PERCENT":
+                        atkPercent += useGrind ? sub.getValue() + sub.getGrindValue() : sub.getValue();
+                        break;
+                    case "DEF_PERCENT":
+                        defPercent += useGrind ? sub.getValue() + sub.getGrindValue() : sub.getValue();
+                        break;
+                    case "ACCURACY":
+                        acc += useGrind ? sub.getValue() + sub.getGrindValue() : sub.getValue();
+                        break;
+                    case "RESISTANCE":
+                        res += useGrind ? sub.getValue() + sub.getGrindValue() : sub.getValue();
+                        break;
+                    case "SPD":
+                        spd += useGrind ? sub.getValue() + sub.getGrindValue() : sub.getValue();
+                        break;
+                    case "CRIT_RATE":
+                        critRate += useGrind ? sub.getValue() + sub.getGrindValue() : sub.getValue();
+                        break;
+                    case "CRIT_DMG":
+                        critDamage += useGrind ? sub.getValue() + sub.getGrindValue() : sub.getValue();
+                        break;
+                    case "HP":
+                        hp += useGrind ? sub.getValue() + sub.getGrindValue() : sub.getValue();
+                        break;
+                    case "ATK":
+                        atk += useGrind ? sub.getValue() + sub.getGrindValue() : sub.getValue();
+                        break;
+                    case "DEF":
+                        def += useGrind ? sub.getValue() + sub.getGrindValue() : sub.getValue();
+                        break;
+                }
+            }
+        }
+
+        this.score = (int) Math.round(((hpPercent + atkPercent + defPercent + acc + res) / 40 +
+                (spd + critRate) / 30 + critDamage / 35 +
+                hp / 1875 * 0.35 + (atk + def) / 100 * 0.35) * 100);
     }
 
     public double getEfficiency(){
@@ -202,13 +297,13 @@ public class Rune {
     }
 
     public boolean insertIntoDB(Connection conn){
-        StringBuilder insertSQL = new StringBuilder("INSERT INTO Runes (type, slot, grade, stars, level, main_stat, main_value, innate_stat, innate_value, sub1_stat, sub1_value, sub2_stat, sub2_value, sub3_stat, sub3_value, sub4_stat, sub4_value, ancient, equipped, value, com2us_id, efficiency");
+        StringBuilder insertSQL = new StringBuilder("INSERT INTO Runes (type, slot, grade, stars, level, main_stat, main_value, innate_stat, innate_value, HP, HP_PERCENT, ATK, ATK_PERCENT, DEF, DEF_PERCENT, SPD, CRIT_RATE, CRIT_DMG, RESISTANCE, ACCURACY, ancient, equipped, value, com2us_id, efficiency, score");
 
         for (RuneArchetype archetype : Archetypes.archetypes) {
             insertSQL.append(", ").append(archetype.getName()).append("_Efficiency");
         }
 
-        insertSQL.append(") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?");
+        insertSQL.append(") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?");
 
         for (int i = 0; i < Archetypes.archetypes.size(); i++) {
             insertSQL.append(", ?");
@@ -226,23 +321,48 @@ public class Rune {
             preparedStatement.setInt(7, main.getValue());
             preparedStatement.setString(8, innate.getStat() != null ? innate.getStat().getName() : null);
             preparedStatement.setInt(9, innate.getValue());
-            for (int i = 0; i < 4; i++) {
-                if (i < subs.length && subs[i] != null) {
-                    preparedStatement.setString(10 + i * 2, subs[i].getStat().getName());
-                    preparedStatement.setInt(11 + i * 2, subs[i].getValue() + subs[i].getGrindValue());
-                } else {
-                    preparedStatement.setNull(10 + i * 2, java.sql.Types.VARCHAR);
-                    preparedStatement.setNull(11 + i * 2, java.sql.Types.INTEGER);
+
+            // Initialize all substat values to null
+            for(int i = 10; i <= 20; i++) {
+                preparedStatement.setNull(i, java.sql.Types.INTEGER);
+            }
+
+            // Set values for substats that exist
+            for(Substat sub : subs) {
+                if(sub != null && sub.getStat() != null) {
+                    String statName = sub.getStat().getName();
+                    int columnIndex = -1;
+                    
+                    // Map stat names to column indices
+                    switch(statName) {
+                        case "HP": columnIndex = 10; break;
+                        case "HP_PERCENT": columnIndex = 11; break;
+                        case "ATK": columnIndex = 12; break;
+                        case "ATK_PERCENT": columnIndex = 13; break;
+                        case "DEF": columnIndex = 14; break;
+                        case "DEF_PERCENT": columnIndex = 15; break;
+                        case "SPD": columnIndex = 16; break;
+                        case "CRIT_RATE": columnIndex = 17; break;
+                        case "CRIT_DMG": columnIndex = 18; break;
+                        case "RESISTANCE": columnIndex = 19; break;
+                        case "ACCURACY": columnIndex = 20; break;
+                    }
+                    
+                    if(columnIndex != -1) {
+                        preparedStatement.setInt(columnIndex, sub.getValue() + sub.getGrindValue());
+                    }
                 }
             }
-            preparedStatement.setBoolean(18, ancient);
-            preparedStatement.setLong(19, equipped);
-            preparedStatement.setLong(20, value);
-            preparedStatement.setLong(21, com2us_id);
-            preparedStatement.setDouble(22, efficiency);
+
+            preparedStatement.setBoolean(21, ancient);
+            preparedStatement.setLong(22, equipped);
+            preparedStatement.setLong(23, value);
+            preparedStatement.setLong(24, com2us_id);
+            preparedStatement.setDouble(25, efficiency);
+            preparedStatement.setInt(26, score);
             
             // Set archetype efficiencies
-            int paramIndex = 23;
+            int paramIndex = 27;
             for (RuneArchetype archetype : Archetypes.archetypes) {
                 double archetypeEff = archetype.getArchetypeEff(this);
                 preparedStatement.setDouble(paramIndex++, archetypeEff);
